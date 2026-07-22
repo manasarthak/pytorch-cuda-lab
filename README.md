@@ -60,5 +60,11 @@ uv run pytest
 | `src/mcc/models/cnn1d.py` | from-scratch 1D-CNN |
 | `src/mcc/train/loop.py` | whole-dataset-on-GPU training loop with AMP |
 | `src/mcc/train/cuda_utils.py` | device/memory/timing helpers |
+| `src/mcc/learn/` | inspection + visualization helpers for the PyTorch/CUDA lab |
 
-See [`PLAN.md`](PLAN.md) for the learning roadmap.
+## Learning the PyTorch/CUDA side
+
+- [`GUIDE.md`](GUIDE.md) — a 12-step, see-it-yourself lab. You write the PyTorch;
+  the `mcc.learn` helpers let you watch the internals (tensor storage, autograd
+  graph, GPU memory, launch-bound vs compute-bound, AMP, profiling).
+- [`PLAN.md`](PLAN.md) — the overall learning roadmap (rungs 0-3 + CUDA deep-dive).
