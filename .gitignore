@@ -1,0 +1,42 @@
+# --- Secrets / environment (never commit) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.aws/
+credentials
+
+# --- Data (org data must never land in a personal repo) ---
+# Anchored to repo root so it does NOT match the src/mcc/data package.
+/data/
+configs/manifest.csv
+configs/*.manifest.csv
+*.npy
+*.npz
+*.bson
+*.bson.gz
+*.parquet
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# --- Notebooks / editors ---
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# --- ML artifacts ---
+runs/
+checkpoints/
+*.ckpt
+*.pt
+mlruns/

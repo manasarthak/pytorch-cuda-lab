@@ -1,0 +1,41 @@
+[project]
+name = "melt-curve-classifier"
+version = "0.1.0"
+description = "A personal learning project: classical + PyTorch/CUDA models for melt-curve species classification."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.1",
+    "scipy>=1.14",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "xgboost>=2.1",
+    "boto3>=1.35",
+    "pymongo>=4.8",       # provides the `bson` module used to decode the S3 BSON blobs
+    "matplotlib>=3.9",
+    "tqdm>=4.66",
+]
+
+# Torch is intentionally NOT a hard dependency: the CUDA wheels come from a custom
+# index and are large. Install them explicitly (see README), e.g.:
+#   uv add torch --index-url https://download.pytorch.org/whl/cu126
+[project.optional-dependencies]
+torch = ["torch>=2.5"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "ipykernel>=6.29",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcc"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
