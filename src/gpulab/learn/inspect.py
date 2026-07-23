@@ -3,7 +3,7 @@
 Every function here PRINTS what's happening -- the point is for you to run your own
 one-liners and watch the internals. Nothing here trains a model or hides logic.
 
-Import: ``from mcc.learn import inspect as I`` (torch required).
+Import: ``from gpulab.learn import inspect as I`` (torch required).
 """
 
 from __future__ import annotations

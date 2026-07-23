@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from mcc.data.preprocess import (
+from gpulab.data.preprocess import (
     PreprocessConfig,
     center_peaks,
     positive_mask,

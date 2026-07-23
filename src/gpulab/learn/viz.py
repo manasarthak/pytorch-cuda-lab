@@ -3,7 +3,7 @@
 These return a matplotlib Figure so they work in notebooks (they display) and in
 scripts (call ``fig.savefig(...)``). Accept torch tensors or numpy arrays.
 
-Import: ``from mcc.learn import viz``.
+Import: ``from gpulab.learn import viz``.
 """
 
 from __future__ import annotations

@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import sys
 
-from mcc.data.dataset import Dataset, grouped_train_test_split
-from mcc.models.classical import train_xgb
+from gpulab.data.dataset import Dataset, grouped_train_test_split
+from gpulab.models.classical import train_xgb
 
 
 def main() -> None:

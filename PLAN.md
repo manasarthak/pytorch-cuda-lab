@@ -1,9 +1,17 @@
 # Learning roadmap
 
-Goal: learn **PyTorch and CUDA utilization** while training **robust, simple models**
-for melt-curve species classification. Same 61-point dataset at every rung, so
-results are directly comparable. Classical models set the accuracy bar; the neural
-track is where the CUDA learning happens.
+Goal: learn **PyTorch internals and GPU/CUDA mechanisms**, using melt-curve species
+classification as the workload. Same 61-point dataset at every rung, so results are
+directly comparable. Classical models set the accuracy bar; the neural track is
+where the CUDA learning happens.
+
+Companion documents:
+
+- [`GUIDE.md`](GUIDE.md) — the 12-step PyTorch lab (concepts, hands-on).
+- [`docs/04-cuda-deep-dive.md`](docs/04-cuda-deep-dive.md) — the 12 GPU/CUDA
+  experiment modules (M0-M12). These go deeper than the rungs below and can be run
+  independently, on synthetic tensors, before any data exists.
+- [`docs/`](docs/README.md) — setup, data pipeline, baselines, profiling, log.
 
 ## The data reality that shapes the CUDA lessons
 

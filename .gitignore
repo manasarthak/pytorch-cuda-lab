@@ -8,7 +8,7 @@
 credentials
 
 # --- Data (org data must never land in a personal repo) ---
-# Anchored to repo root so it does NOT match the src/mcc/data package.
+# Anchored to repo root so it does NOT match the src/gpulab/data package.
 /data/
 configs/manifest.csv
 configs/*.manifest.csv

@@ -2,7 +2,7 @@
 
 This is the "robust simple model" and the accuracy bar the neural nets must beat.
 XGBoost can use the GPU (``device="cuda"``) but that barely exercises CUDA — the
-real PyTorch/CUDA learning starts in ``mcc.models.cnn1d`` (Rung 2).
+real PyTorch/CUDA learning starts in ``gpulab.models.cnn1d`` (Rung 2).
 """
 
 from __future__ import annotations

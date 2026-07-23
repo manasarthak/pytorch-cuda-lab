@@ -2,7 +2,7 @@
 
 This is a **hands-on path**, not a tutorial to copy. At each step you:
 
-- **See it** — call an inspection helper from `mcc.learn` to watch the internals.
+- **See it** — call an inspection helper from `gpulab.learn` to watch the internals.
 - **Write it** — you write the small bit of PyTorch (the guide tells you *what*, not *how*).
 - **Look for** — what the under-the-hood output should teach you.
 
@@ -20,8 +20,8 @@ Then, in a REPL or a notebook under `notebooks/`:
 
 ```python
 import torch
-from mcc.learn import inspect as I
-from mcc.learn import viz
+from gpulab.learn import inspect as I
+from gpulab.learn import viz
 ```
 
 Keep `GUIDE.md` open on one side and the REPL on the other. Work top to bottom.
@@ -32,7 +32,7 @@ Keep `GUIDE.md` open on one side and the REPL on the other. Work top to bottom.
 
 **See it**
 ```python
-from mcc.train.cuda_utils import describe_device
+from gpulab.train.cuda_utils import describe_device
 print(describe_device())          # name, VRAM, sm_XX, torch version
 I.cuda_available()
 ```
@@ -126,7 +126,7 @@ Now wrap the forward in `with torch.no_grad():` and re-check `L.grad_fn` — it'
 ## Step 5 — `nn.Module` and parameters
 
 **Write it:** subclass `nn.Module` with one `nn.Linear(61, 8)` and a `forward`.
-(You already have a real one to study in `mcc/models/cnn1d.py` — but write a tiny
+(You already have a real one to study in `gpulab/models/cnn1d.py` — but write a tiny
 one yourself first.)
 
 **See it**
@@ -177,11 +177,11 @@ vs `False` and read the docs note: `None` grads skip a kernel and save memory.
 ## Step 8 — A real training loop (your milestone)
 
 Now assemble Steps 4–7 into a loop over the melt-curve data. **Write this yourself**
-— it's the whole point. Load a dataset (`mcc.data.dataset.Dataset.load`), split by
+— it's the whole point. Load a dataset (`gpulab.data.dataset.Dataset.load`), split by
 chip (`grouped_train_test_split`), then loop: shuffle → minibatch → zero → forward →
 loss → backward → step; evaluate each epoch.
 
-There's a reference implementation in `mcc/train/loop.py` — **don't read it until
+There's a reference implementation in `gpulab/train/loop.py` — **don't read it until
 you've written your own**, then diff yours against it to see what you missed.
 
 **See it**

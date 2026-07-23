@@ -5,8 +5,8 @@ what your own code is doing under the hood at each step. Pair them with GUIDE.md
 
 Typical use in a REPL / notebook:
 
-    from mcc.learn import inspect as I
-    from mcc.learn import viz
+    from gpulab.learn import inspect as I
+    from gpulab.learn import viz
 
     t = ...            # a tensor YOU created
     I.describe_tensor(t, "t")

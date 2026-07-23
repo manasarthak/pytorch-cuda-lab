@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sys
 
-from mcc.data.dataset import build_and_save
+from gpulab.data.dataset import build_and_save
 
 
 def main() -> None:
