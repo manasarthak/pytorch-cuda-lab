@@ -15,13 +15,29 @@ ds = Dataset.load("data/processed/dataset.npz")
 y, classes = ds.y_int()
 tr, te = grouped_train_test_split(ds, test_fraction=0.25, seed=0)
 
-model = CNN1D(n_classes=len(classes), roi_len=ds.X.shape[1])
+model = CNN1D(n_classes=len(classes), roi_len=ds.X.shape[1], head="flatten")
 out = train(model, ds.X[tr], y[tr], ds.X[te], y[te], TrainConfig(epochs=50, batch_size=512))
 ```
 
 The loop keeps the whole dataset resident on the GPU and slices batches on-device.
 That is deliberate: it removes the input pipeline as a variable so the CUDA
 measurements in [04-cuda-deep-dive.md](04-cuda-deep-dive.md) are about compute.
+
+### The head choice decides whether the model can use Tm
+
+The data uses a **fixed, unaligned window (350-470)** so the melt temperature (Tm =
+peak position) is preserved (see [01-data-pipeline.md](01-data-pipeline.md)). Whether
+the model can actually *use* Tm depends entirely on its head:
+
+| Head | Sees peak position (Tm)? | Use with |
+|---|---|---|
+| `head="flatten"` (default) | **yes** — `Flatten -> Linear` keeps position | fixed unaligned ROI |
+| `head="avg"` | no — global average pooling is translation-invariant | peak-centered ROI (`roi=None`) |
+
+Pairing the fixed window with an `avg` head silently throws Tm away inside the
+network — the exact information the fixed window was meant to keep. A worthwhile
+experiment: train `flatten` vs `avg` on the same fixed-window data and measure the
+gap. That gap *is* the value of Tm for this task.
 
 ## Protocol
 
@@ -67,7 +83,8 @@ Report it. Likely explanations, in order of probability:
 - The task is dominated by peak position and height, which the features already
   capture explicitly.
 - Too few chips — deep models need more data diversity than 13 features do.
-- The 61-point ROI has discarded discriminative signal outside the window.
+- The ROI window (350-470) has discarded discriminative signal outside it — widen
+  it and rebuild. Or the head is pooling away Tm (use `head="flatten"`).
 
 The third is testable: rebuild the dataset with a wider ROI (a `(start, end)` tuple
 instead of peak-centering) and rerun both models.

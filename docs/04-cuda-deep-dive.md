@@ -42,7 +42,7 @@ look them up?
 **Why it matters:** every later module is a comparison against these ceilings.
 "Slow" is meaningless without knowing the maximum. The 76 FLOP/byte balance point
 is the single most useful number here — it predicts, before you run anything,
-that elementwise work on 61-point curves will be memory- and launch-bound.
+that elementwise work on 120-point curves will be memory- and launch-bound.
 
 ---
 
@@ -62,7 +62,7 @@ pinned memory should be noticeably faster and is required for genuinely async
 copies. `non_blocking=True` only actually overlaps when the source is pinned.
 
 **Why it matters:** this is the wall every "load data from CPU each step" pipeline
-hits. It is also why this repo keeps the entire dataset resident in VRAM — 244 MB
+hits. It is also why this repo keeps the entire dataset resident in VRAM — 480 MB
 crosses PCIe once instead of every epoch.
 
 ---
@@ -181,7 +181,7 @@ nvidia-smi dmon -s um
 
 **Expect:** throughput rises steeply, then flattens — the knee is where you finally
 have enough parallelism to saturate the SMs. Below the knee you are paying full
-launch cost for a partly idle GPU. With 61-point curves you may need very large
+launch cost for a partly idle GPU. With 120-point curves you may need very large
 batches to find the knee, and may never reach 100% utilization.
 
 **Why it matters:** "the GPU is only at 20%" is a symptom, not a diagnosis. This

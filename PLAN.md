@@ -1,7 +1,7 @@
 # Learning roadmap
 
 Goal: learn **PyTorch internals and GPU/CUDA mechanisms**, using melt-curve species
-classification as the workload. Same 61-point dataset at every rung, so results are
+classification as the workload. Same 120-point dataset at every rung, so results are
 directly comparable. Classical models set the accuracy bar; the neural track is
 where the CUDA learning happens.
 
@@ -15,8 +15,8 @@ Companion documents:
 
 ## The data reality that shapes the CUDA lessons
 
-There are **thousands of curves per organism**, but each curve is only 61 floats.
-Even 1M curves is ~244 MB, so the **entire dataset fits in the 4060 Ti's 16 GB**.
+There are **thousands of curves per organism**, but each curve is only 120 floats.
+Even 1M curves is ~480 MB, so the **entire dataset fits in the 4060 Ti's 16 GB**.
 That flips the usual lessons:
 
 - Hold `X` as one resident CUDA tensor; slice batches on-device (no DataLoader).
@@ -24,7 +24,7 @@ That flips the usual lessons:
   bound** — GPU utilization stays low regardless of batch size. Feeling this is the
   single most useful CUDA lesson here.
 - To actually **saturate** the GPU, add compute: wider/deeper nets, big batches +
-  AMP, or the 2D **recurrence-plot** representation (61-pt curve → image → 2D CNN).
+  AMP, or the 2D **recurrence-plot** representation (120-pt curve → image → 2D CNN).
 
 ## Rungs
 
@@ -50,7 +50,7 @@ That flips the usual lessons:
 
 ## Deliberately out of scope (for now)
 
-- Transformers / HF time-series foundation models. On 61-point curves they're a
+- Transformers / HF time-series foundation models. On 120-point curves they're a
   learning stretch, not an accuracy play — revisit only after Rung 3 if curious.
 - Open-set / unknown-species rejection.
 

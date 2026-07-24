@@ -5,12 +5,16 @@ from __future__ import annotations
 import numpy as np
 
 from gpulab.data.preprocess import (
+    FIXED_WINDOW,
     PreprocessConfig,
     center_peaks,
+    output_len,
     positive_mask,
     preprocess_curves,
     preprocess_positive_curves,
 )
+
+FIXED_LEN = FIXED_WINDOW[1] - FIXED_WINDOW[0]  # 120
 
 
 def _synthetic_raw(n_wells: int = 8, n_frames: int = 500, peak_frame: int = 420) -> np.ndarray:
@@ -41,21 +45,41 @@ def test_center_peaks_edge_padding():
     assert out.shape == (1, 61)
 
 
-def test_preprocess_shape_and_auc_normalization():
-    raw = _synthetic_raw()
-    cfg = PreprocessConfig(normalization="auc")
-    X = preprocess_curves(raw, cfg)
-    assert X.shape == (raw.shape[0], 61)
-    # Unit-area normalization: trapezoid integral of each curve ~= 1.
+def test_default_is_fixed_unaligned_window():
+    # The default ROI is the fixed window (350, 470) -> length 120, unaligned,
+    # so Tm/peak position is preserved.
+    cfg = PreprocessConfig()
+    assert cfg.roi == FIXED_WINDOW
+    assert output_len(cfg) == FIXED_LEN
+    X = preprocess_curves(_synthetic_raw(), cfg)
+    assert X.shape == (8, FIXED_LEN)
+
+
+def test_fixed_window_keeps_peak_position():
+    # Two curve sets with different Tm must place their peak at different columns
+    # (this is the whole point of NOT aligning).
+    early = _synthetic_raw(peak_frame=395)
+    late = _synthetic_raw(peak_frame=445)
+    Xe = preprocess_curves(early, PreprocessConfig(normalization=None))
+    Xl = preprocess_curves(late, PreprocessConfig(normalization=None))
+    assert Xe.argmax(axis=1).mean() < Xl.argmax(axis=1).mean()
+
+
+def test_peak_centered_mode_aligns_to_length_61():
+    # roi=None -> org-pipeline peak-centered behavior, length slice_length (61).
+    cfg = PreprocessConfig(roi=None, normalization=None)
+    assert output_len(cfg) == 61
+    X = preprocess_curves(_synthetic_raw(), cfg)
+    assert X.shape == (8, 61)
+    # Aligned: every curve's peak sits near the center column (30).
+    assert np.allclose(X.argmax(axis=1), 30, atol=3)
+
+
+def test_auc_normalization_gives_unit_area():
+    X = preprocess_curves(_synthetic_raw(), PreprocessConfig(normalization="auc"))
+    assert X.shape == (8, FIXED_LEN)
     areas = np.trapezoid(X, axis=1)
     assert np.allclose(areas, 1.0, atol=1e-6)
-
-
-def test_preprocess_no_normalization_matches_raw_derivative():
-    raw = _synthetic_raw()
-    X = preprocess_curves(raw, PreprocessConfig(normalization=None))
-    assert X.shape == (raw.shape[0], 61)
-    assert np.isfinite(X).all()
 
 
 def test_positive_mask_selects_real_peaks():
@@ -72,4 +96,4 @@ def test_preprocess_positive_curves_returns_indices():
     cfg = PreprocessConfig(peak_threshold=0.0, minimum_value=-np.inf)
     X, idx = preprocess_positive_curves(raw, cfg)
     assert X.shape[0] == idx.shape[0]
-    assert X.shape[1] == 61
+    assert X.shape[1] == FIXED_LEN

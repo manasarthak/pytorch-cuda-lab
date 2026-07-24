@@ -1,6 +1,6 @@
 # 01 — Data pipeline
 
-Turns raw melt-signal blobs in S3 into an `(N, 61)` float32 matrix with species
+Turns raw melt-signal blobs in S3 into an `(N, 120)` float32 matrix with species
 labels. This is the workload the GPU experiments run on.
 
 ## What the pipeline does
@@ -11,11 +11,29 @@ training sample through five steps (`gpulab/data/preprocess.py`):
 1. Savitzky-Golay smooth of the raw signal (window 13, polyorder 2).
 2. Negative first derivative (`-gradient`) — melt transitions become positive peaks.
 3. Second Savitzky-Golay smooth on the derivative.
-4. ROI crop — a length-**61** window centered on the peak found in frames 380-460.
+4. ROI crop — a **fixed, unaligned** window, frames **350-470** (length **120**).
 5. Optional normalization — divide by trapezoidal area (unit AUC).
 
 **Positive-well mining** keeps a well only if its derivative peak in frames 380-460
 exceeds `4.0` **and** its centered derivative never dips below `minimum_value`.
+
+### Why a fixed window instead of peak-centering
+
+The org pipeline crops a length-61 window *centered on each peak* (`roi=None`
+here). That aligns every curve — which throws away **where** the peak is. But the
+peak position is the **melt temperature (Tm)**, one of the strongest signals for
+telling species apart. So the default here is a **fixed window (350-470) with no
+alignment**, keeping Tm as a feature the model can use.
+
+Two consequences to remember:
+
+- Curves are now length **120**, not 61, and peaks sit at their true position.
+- A model that then *pools away* position (global average pooling) discards Tm
+  again inside the network. Use a position-aware head — see
+  [03-neural-training.md](03-neural-training.md). XGBoost is unaffected: its
+  `peak_idx` feature captures Tm explicitly.
+
+To reproduce the org pipeline exactly, set `roi=None` (length-61, peak-aligned).
 
 ## Steps
 
@@ -57,11 +75,11 @@ Check these, in order:
 
 | Check | Expect | If it fails |
 |---|---|---|
-| `ds.X.shape[1]` | `61` | ROI config changed, or raw frames < 460 |
+| `ds.X.shape[1]` | `120` | ROI config changed, or raw frames < 470 |
 | No NaN/Inf | `np.isfinite(ds.X).all()` | a curve had zero AUC (division blew up) |
 | Curves per chip | tens to thousands | mining thresholds may be too strict/loose |
 | Class balance | note it — it will be uneven | plan for balancing or class weights |
-| Peak position | near index 30 (center) | peak-centering isn't working |
+| Peak position | spread across the window (NOT all at one column) | window/framing wrong if all identical |
 
 ### 5. Look at the data
 
@@ -100,13 +118,13 @@ set(ds.chip_id[train_idx]) & set(ds.chip_id[test_idx])   # must be empty
 | Blob won't decode | not concatenated BSON; try `bson.decode_file_iter` on a stream |
 | `No positive curves found` | thresholds too strict, or frames 380-460 is the wrong window for this data |
 
-The frame window (380-460), peak threshold (4.0), and slice length (61) are the
-assumptions most likely to differ across instruments. They're constants at the top
-of `gpulab/data/preprocess.py`.
+The fixed ROI (350-470), mining peak window (380-460), and peak threshold (4.0) are
+the assumptions most likely to differ across instruments. They're constants at the
+top of `gpulab/data/preprocess.py`.
 
 ## Scale note
 
 With thousands of curves per organism the whole dataset is still small: 1M curves x
-61 floats x 4 bytes is about **244 MB**. It fits entirely in 16 GB of VRAM, which is
-what makes the GPU experiments in [04-cuda-deep-dive.md](04-cuda-deep-dive.md)
+120 floats x 4 bytes is about **480 MB**. It fits entirely in 16 GB of VRAM, which
+is what makes the GPU experiments in [04-cuda-deep-dive.md](04-cuda-deep-dive.md)
 possible without an input pipeline in the way.

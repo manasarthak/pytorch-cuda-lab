@@ -15,7 +15,7 @@ importances on a chip-grouped split.
 
 ## What the features are
 
-`gpulab/features.py` reduces each 61-point curve to shape descriptors an analyst
+`gpulab/features.py` reduces each 120-point curve to shape descriptors an analyst
 would recognize: peak position and height, AUC, distribution moments (mean, std,
 skew, kurtosis), FWHM, peak count, minimum, and left/right area split.
 

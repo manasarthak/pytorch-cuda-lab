@@ -5,16 +5,24 @@ The transform, applied to raw fluorescence curves of shape ``(n_wells, n_frames)
 1. Savitzky-Golay smooth of the raw signal.
 2. Negative first derivative (``-gradient``) -> melt transitions become positive peaks.
 3. Second Savitzky-Golay smooth, on the derivative.
-4. ROI crop: either a fixed ``[start:end]`` slice, or a peak-centered length-61
-   window (argmax searched inside ``peak_window``).
-5. Optional normalization: divide each curve by its trapezoidal area (unit AUC).
+4. ROI crop. Two modes:
+   * **Fixed, unaligned window** (the default, ``roi=(350, 470)``): a plain slice
+     that leaves every peak at its true position, so the melt temperature (Tm =
+     peak location) stays a discriminative feature for the model.
+   * **Peak-centered window** (``roi=None``): the org-pipeline behavior — a
+     length-``slice_length`` window centered on each peak. This aligns the curves
+     and therefore DISCARDS Tm, leaving only peak shape.
+5. Optional normalization: divide each curve by its trapezoidal area (unit AUC),
+   which removes amplitude differences while preserving Tm and peak shape.
 
 Positive-well *mining* runs the same transform, then keeps a well only if it has a
 real melt peak in the target window AND its centered derivative never dips below
-``minimum_value``.
+``minimum_value``. (Mining always uses peak-centering internally for the negative-
+value check; it is independent of the model-input ROI chosen above.)
 
-Every default here matches the pipeline that produced the org's training data. The
-math is pure numpy/scipy so it can be unit-tested and diffed against a GPU port.
+The math is pure numpy/scipy so it can be unit-tested and diffed against a GPU port.
+If you want to exactly reproduce the org pipeline, set ``roi=None`` (length-61,
+peak-aligned) which matches ``center_peaks(..., 61, (380, 460))``.
 """
 
 from __future__ import annotations
@@ -25,10 +33,16 @@ from typing import Literal, Optional
 import numpy as np
 from scipy.signal import savgol_filter
 
-# --- Constants baked into the org pipeline (change only if the raw framing changes) ---
+# --- Constants (change only if the raw framing changes) ---
 PEAK_WINDOW: tuple[int, int] = (380, 460)  # frames where the melt peak is expected
 PEAK_THRESHOLD: float = 4.0                # min derivative peak to count as a positive
-SLICE_LENGTH: int = 61                     # length of the peak-centered ROI
+SLICE_LENGTH: int = 61                     # length of the peak-centered ROI (alignment mode)
+
+# Default model-input ROI: a FIXED, UNALIGNED window (length 120) around the peak
+# region. Unlike peak-centering, this keeps each curve's peak at its true position,
+# so the melt temperature (Tm = peak location) survives as a discriminative feature.
+# The window brackets PEAK_WINDOW (380-460) with margin on both sides.
+FIXED_WINDOW: tuple[int, int] = (350, 470)
 
 
 @dataclass(frozen=True)
@@ -40,12 +54,20 @@ class PreprocessConfig:
     peak_window: tuple[int, int] = PEAK_WINDOW
     peak_threshold: float = PEAK_THRESHOLD
     slice_length: int = SLICE_LENGTH
-    # None -> raw derivative values; "auc" -> unit-area normalized.
+    # None -> raw derivative values; "auc" -> unit-area normalized (keeps Tm + shape).
     normalization: Optional[Literal["auc"]] = "auc"
-    # ROI: None -> peak-centered window; (start, end) -> fixed slice.
-    roi: Optional[tuple[int, int]] = None
+    # ROI for model input:
+    #   (start, end) -> fixed unaligned slice; KEEPS Tm/peak position (the default).
+    #   None         -> peak-centered length-`slice_length` window; DISCARDS Tm,
+    #                   leaving only peak shape (the org-pipeline behavior).
+    roi: Optional[tuple[int, int]] = FIXED_WINDOW
     # Required for mining (positive-well selection); may stay None for plain preprocessing.
     minimum_value: Optional[float] = 0.0
+
+
+def output_len(cfg: PreprocessConfig) -> int:
+    """Number of columns ``preprocess_curves`` produces for this config."""
+    return (cfg.roi[1] - cfg.roi[0]) if cfg.roi is not None else cfg.slice_length
 
 
 def center_peaks(
@@ -135,5 +157,5 @@ def preprocess_positive_curves(
     """
     mask = positive_mask(raw, cfg)
     indices = np.flatnonzero(mask)
-    X = preprocess_curves(raw[indices], cfg) if indices.size else np.empty((0, cfg.slice_length))
+    X = preprocess_curves(raw[indices], cfg) if indices.size else np.empty((0, output_len(cfg)))
     return X, indices

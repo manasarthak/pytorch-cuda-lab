@@ -21,13 +21,14 @@ never in source.
 ## The workload
 
 Each well of a qPCR run gives a fluorescence-vs-temperature curve. Preprocessing
-turns it into a peak-centered, smoothed **negative derivative** (-dF/dT) of length
-**61** — the melt "peak". The label is the bacterial **species**. See
-`src/gpulab/data/preprocess.py` for the exact recipe.
+turns it into a smoothed **negative derivative** (-dF/dT) and crops a fixed,
+**unaligned** window (frames 350-470, length **120**) — the melt "peak" left at its
+true position so the melt temperature (Tm) stays a feature. The label is the
+bacterial **species**. See `src/gpulab/data/preprocess.py` for the exact recipe.
 
 Why it's a good CUDA teaching workload: there are thousands of curves per organism,
-but each is only 61 floats — so **the entire dataset fits in VRAM** (1M curves is
-~244 MB). That removes the input pipeline as a variable and puts the interesting
+but each is only 120 floats — so **the entire dataset fits in VRAM** (1M curves is
+~480 MB). That removes the input pipeline as a variable and puts the interesting
 GPU behaviour (launch overhead, occupancy, fusion) directly under the microscope.
 
 ## Setup

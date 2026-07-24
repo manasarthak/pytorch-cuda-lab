@@ -2,7 +2,7 @@
 
 The lessons this project is built around:
 
-* On 61-point curves the whole dataset fits in VRAM (1M curves ~= 244 MB), so you
+* On 120-point curves the whole dataset fits in VRAM (1M curves ~= 480 MB), so you
   can hold ``X`` as one resident CUDA tensor and index batches on-device — zero
   DataLoader/PCIe overhead. With a tiny model you'll then observe that training is
   *kernel-launch bound*, not compute bound: GPU utilization stays low no matter the

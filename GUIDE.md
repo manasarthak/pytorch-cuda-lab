@@ -76,7 +76,7 @@ need `.contiguous()` (a real copy). `x + 0` does *not* share storage — it allo
 for t in (x.float(), x.half(), x.bfloat16(), x.double()):
     I.describe_tensor(t, str(t.dtype))
 ```
-**Look for:** `element_size` and total bytes halve fp32→fp16/bf16. On 61-point
+**Look for:** `element_size` and total bytes halve fp32→fp16/bf16. On 120-point
 curves this is tiny, but at scale it's why mixed precision is faster *and* leaner.
 Note fp16 and bf16 are both 2 bytes but trade range vs precision differently.
 
@@ -125,7 +125,7 @@ Now wrap the forward in `with torch.no_grad():` and re-check `L.grad_fn` — it'
 
 ## Step 5 — `nn.Module` and parameters
 
-**Write it:** subclass `nn.Module` with one `nn.Linear(61, 8)` and a `forward`.
+**Write it:** subclass `nn.Module` with one `nn.Linear(120, 8)` and a `forward`.
 (You already have a real one to study in `gpulab/models/cnn1d.py` — but write a tiny
 one yourself first.)
 
@@ -195,7 +195,7 @@ viz.plot_history(history)      # loss down, accuracy up
 
 ## Step 9 — CUDA utilization: why the GPU looks *idle*
 
-Your whole dataset fits in VRAM (1M curves ≈ 244 MB). Put it there once and slice
+Your whole dataset fits in VRAM (1M curves ≈ 480 MB). Put it there once and slice
 batches on-device — no DataLoader. Then measure.
 
 **See it**
