@@ -1,8 +1,13 @@
 # Documentation
 
-Runbooks for this lab. `GUIDE.md` (repo root) teaches PyTorch concepts step by
-step; these documents tell you **how to actually run things** and how to run the
-GPU/CUDA experiments rigorously.
+Runbooks and reference for this lab. The **hands-on learning happens in
+[`notebooks/`](../notebooks/README.md)** — that's the playground where you write and
+run code. These docs are the reference you read alongside: `GUIDE.md` (repo root)
+teaches PyTorch step by step, and the numbered files below tell you **how to actually
+run things** and how to run the GPU/CUDA experiments rigorously.
+
+Order of learning: do the Phase-1 notebooks (`01`-`04`) with `docs/08` open, then
+work `GUIDE.md` + `docs/04` for PyTorch/CUDA.
 
 ## Read in this order
 

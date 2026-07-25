@@ -6,6 +6,9 @@ method is identical: **reimplement each piece yourself, then diff against the re
 version with `np.allclose`.** If your version matches, you understood it; if it
 doesn't, the gap is the lesson.
 
+The runnable version of this lab is in `notebooks/01`-`04` — do the exercises there;
+this doc is the written reference for them.
+
 You already built a dataset, so use it as the playground:
 
 ```python
