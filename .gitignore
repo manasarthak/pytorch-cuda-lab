@@ -10,8 +10,11 @@ credentials
 # --- Data (org data must never land in a personal repo) ---
 # Anchored to repo root so it does NOT match the src/gpulab/data package.
 /data/
+# Real manifests contain org chip IDs. Keep only the *.example.* templates.
 configs/manifest.csv
+configs/manifest.json
 configs/*.manifest.csv
+configs/*.manifest.json
 *.npy
 *.npz
 *.bson

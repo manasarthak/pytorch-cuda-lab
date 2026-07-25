@@ -1,13 +1,15 @@
 """Build a model-ready dataset from a chip manifest.
 
-A manifest is a CSV with columns ``chip_id,species``. For each chip we fetch the
-raw curves (cached), mine positive wells, preprocess them, and stack everything
-into arrays. Splitting is done *by chip* so wells from one chip never straddle the
-train/test boundary (matching the org pipeline's grouped splits).
+A manifest is a CSV (``chip_id,species``) or a JSON list (``[{"id", "species"}, ...]``);
+see :func:`read_manifest`. For each chip we fetch the raw curves (cached), mine
+positive wells, preprocess them, and stack everything into arrays. Splitting is done
+*by chip* so wells from one chip never straddle the train/test boundary (matching the
+org pipeline's grouped splits).
 """
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -50,7 +52,45 @@ class Dataset:
 
 
 def read_manifest(path: str | Path) -> pd.DataFrame:
-    df = pd.read_csv(path, dtype=str).dropna(subset=["chip_id", "species"])
+    """Read a chip manifest into a ``(chip_id, species)`` DataFrame.
+
+    Accepts two formats, chosen by file extension:
+
+    * ``.json`` -- a list of objects, each with ``species`` and a chip id under
+      either ``id`` or ``chip_id``. Example::
+
+          [{"id": "260128_D06...-Phusion", "species": "K. pneumoniae"}, ...]
+
+    * ``.csv`` (or anything else) -- columns ``chip_id,species`` (``id`` also
+      accepted as the id column).
+
+    The ``id``/``chip_id`` value is used verbatim as the S3 object key stem.
+    """
+    path = Path(path)
+    if path.suffix.lower() == ".json":
+        records = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(records, list):
+            raise ValueError(
+                f"JSON manifest must be a list of objects, got {type(records).__name__}: {path}"
+            )
+        rows = []
+        for r in records:
+            chip_id = r.get("chip_id") or r.get("id")
+            species = r.get("species")
+            if chip_id and species:
+                rows.append({"chip_id": str(chip_id).strip(), "species": str(species).strip()})
+        df = pd.DataFrame(rows, columns=["chip_id", "species"])
+    else:
+        df = pd.read_csv(path, dtype=str)
+        if "chip_id" not in df.columns and "id" in df.columns:
+            df = df.rename(columns={"id": "chip_id"})
+        missing = {"chip_id", "species"} - set(df.columns)
+        if missing:
+            raise ValueError(f"CSV manifest missing column(s) {sorted(missing)}: {path}")
+        df = df.dropna(subset=["chip_id", "species"])
+
+    if df.empty:
+        raise ValueError(f"No valid (chip_id, species) rows in manifest: {path}")
     return df[["chip_id", "species"]].reset_index(drop=True)
 
 

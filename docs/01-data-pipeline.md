@@ -27,20 +27,24 @@ out-of-repo dotenv, or exported directly (see [00-setup.md](00-setup.md)).
 
 ### 2. Write a manifest
 
-Create `configs/manifest.csv` (gitignored — chip IDs are org data):
+Create `configs/manifest.json` (gitignored — chip IDs are org data). A list of
+objects with `id` and `species`:
 
-```csv
-chip_id,species
-<chip-id>,E. coli
-<chip-id>,S. aureus
+```json
+[
+  { "id": "260128_D06...C4A_...-Phusion", "species": "E. coli" },
+  { "id": "260128_D06...C17B_...-Phusion", "species": "S. aureus" }
+]
 ```
 
-Start with 3-5 chips per species to validate the pipeline before scaling up.
+CSV (`chip_id,species`) is also accepted — the format is chosen by file extension.
+See `configs/manifest.example.json`. Start with 3-5 chips per species to validate
+the pipeline before scaling up.
 
 ### 3. Build
 
 ```bash
-uv run python scripts/build_dataset.py configs/manifest.csv
+uv run python scripts/build_dataset.py configs/manifest.json
 ```
 
 Raw curves are cached under `data/raw/<chip_id>.npy` on first fetch, so subsequent
