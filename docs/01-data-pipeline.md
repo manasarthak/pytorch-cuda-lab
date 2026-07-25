@@ -17,29 +17,13 @@ training sample through five steps (`gpulab/data/preprocess.py`):
 **Positive-well mining** keeps a well only if its derivative peak in frames 380-460
 exceeds `4.0` **and** its centered derivative never dips below `minimum_value`.
 
-### Why a fixed window instead of peak-centering
-
-The org pipeline crops a length-61 window *centered on each peak* (`roi=None`
-here). That aligns every curve — which throws away **where** the peak is. But the
-peak position is the **melt temperature (Tm)**, one of the strongest signals for
-telling species apart. So the default here is a **fixed window (350-470) with no
-alignment**, keeping Tm as a feature the model can use.
-
-Two consequences to remember:
-
-- Curves are now length **120**, not 61, and peaks sit at their true position.
-- A model that then *pools away* position (global average pooling) discards Tm
-  again inside the network. Use a position-aware head — see
-  [03-neural-training.md](03-neural-training.md). XGBoost is unaffected: its
-  `peak_idx` feature captures Tm explicitly.
-
-To reproduce the org pipeline exactly, set `roi=None` (length-61, peak-aligned).
 
 ## Steps
 
 ### 1. Configure
 
-`.env` must have `MCC_S3_BUCKET` and `MCC_S3_EVA_DB` (see [00-setup.md](00-setup.md)).
+`MCC_S3_BUCKET` and `MCC_S3_EVA_DB` must be set — via `MCC_ENV_FILE` pointing at an
+out-of-repo dotenv, or exported directly (see [00-setup.md](00-setup.md)).
 
 ### 2. Write a manifest
 
@@ -112,7 +96,7 @@ set(ds.chip_id[train_idx]) & set(ds.chip_id[test_idx])   # must be empty
 
 | Symptom | Likely cause |
 |---|---|
-| `MCC_S3_BUCKET is not set` | `.env` missing or not in the working directory |
+| `MCC_S3_BUCKET is not set` | `MCC_ENV_FILE` unset/wrong, var not exported, or `.env` absent |
 | `NoCredentialsError` | boto3 found no AWS credentials in its chain |
 | `KeyError: 'y'` | the BSON document schema differs — inspect one document |
 | Blob won't decode | not concatenated BSON; try `bson.decode_file_iter` on a stream |

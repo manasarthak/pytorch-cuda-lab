@@ -67,11 +67,19 @@ Write these down — module M0 of the deep dive builds on them.
 
 ## 5. Secrets and data config
 
-```bash
-cp .env.example .env
+Keep the secrets file **outside the repo** so it can never be staged. Copy the
+template somewhere private and point `MCC_ENV_FILE` at it (set once, per user):
+
+```powershell
+copy .env.example C:\Users\you\secrets\gpulab.env   # then fill it in
+setx MCC_ENV_FILE "C:\Users\you\secrets\gpulab.env" # open a NEW shell afterward
 ```
 
-Fill in `MCC_S3_BUCKET` and `MCC_S3_EVA_DB`. `.env` is gitignored; never commit it.
+Fill in `MCC_S3_BUCKET` and `MCC_S3_EVA_DB`. Resolution order: a variable already
+set in your real environment wins; otherwise the file at `MCC_ENV_FILE` is loaded;
+otherwise a `.env` in the current directory (gitignored) is used if present. You can
+also skip the file entirely and just `setx` the two variables.
+
 AWS credentials are resolved by boto3's normal chain (env vars, `~/.aws/credentials`,
 `AWS_PROFILE`, or an instance role) — this repo neither reads nor stores them.
 
