@@ -36,7 +36,7 @@ GPU behaviour (launch overhead, occupancy, fusion) directly under the microscope
 ```bash
 uv sync
 cp .env.example .env     # then fill in MCC_S3_BUCKET / MCC_S3_EVA_DB
-uv add torch --index-url https://download.pytorch.org/whl/cu126   # Ada = sm_89
+uv sync --extra torch   # installs CUDA torch from the pinned index (Ada = sm_89)
 ```
 
 Full instructions and troubleshooting: [`docs/00-setup.md`](docs/00-setup.md).

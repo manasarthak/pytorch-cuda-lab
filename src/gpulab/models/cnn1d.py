@@ -16,7 +16,7 @@ Head choice matters for what the model can use:
 If you feed the fixed, unaligned window into an ``avg`` head, you throw the Tm
 information away inside the model -- the exact thing the fixed window preserved.
 
-Requires torch: ``uv add torch --index-url https://download.pytorch.org/whl/cu126``.
+Requires torch: ``uv sync --extra torch``.
 """
 
 from __future__ import annotations

@@ -3,7 +3,8 @@ name = "pytorch-cuda-lab"
 version = "0.1.0"
 description = "A hands-on lab for learning PyTorch internals and GPU/CUDA mechanisms, using melt-curve time-series classification as the workload."
 readme = "README.md"
-requires-python = ">=3.11"
+# Capped below 3.14 because torch has no 3.14 CUDA wheels yet; avoids a resolver split.
+requires-python = ">=3.11,<3.14"
 dependencies = [
     "numpy>=2.1",
     "scipy>=1.14",
@@ -16,9 +17,11 @@ dependencies = [
     "tqdm>=4.66",
 ]
 
-# Torch is intentionally NOT a hard dependency: the CUDA wheels come from a custom
-# index and are large. Install them explicitly (see README), e.g.:
-#   uv add torch --index-url https://download.pytorch.org/whl/cu126
+# Torch is an OPTIONAL extra: the CUDA wheels are large and come from a custom index.
+# Install with:  uv sync --extra torch
+# Do NOT use `uv add torch --index-url ...` -- that flag REPLACES PyPI for the whole
+# resolution, so non-torch deps (boto3, etc.) can no longer be found. The index is
+# registered below, scoped to torch only, so PyPI stays the default for everything else.
 [project.optional-dependencies]
 torch = ["torch>=2.5"]
 
@@ -28,6 +31,16 @@ dev = [
     "ipykernel>=6.29",
     "ruff>=0.6",
 ]
+
+# CUDA wheel index for torch, used ONLY for packages pinned to it via tool.uv.sources.
+# `explicit = true` keeps PyPI as the default index for everything else.
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
 
 [build-system]
 requires = ["hatchling"]

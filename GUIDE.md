@@ -12,7 +12,7 @@ helpers only *reveal* state — they never do the learning for you.
 ### Setup
 
 ```bash
-uv add torch --index-url https://download.pytorch.org/whl/cu126   # Ada = sm_89
+uv sync --extra torch   # installs CUDA torch from the pinned index (Ada = sm_89)
 uv run python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 ```
 

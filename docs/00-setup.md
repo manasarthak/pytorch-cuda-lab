@@ -27,12 +27,18 @@ uv run pytest
 
 ## 3. PyTorch with CUDA
 
-PyTorch CUDA wheels come from a custom index. Ada (`sm_89`) is supported by cu121
-and newer; cu126 is a good default.
+The CUDA wheels come from a custom index (`cu126`), which is registered in
+`pyproject.toml` and scoped to torch only. So installing is just the extra:
 
 ```bash
-uv add torch --index-url https://download.pytorch.org/whl/cu126
+uv sync --extra torch
 ```
+
+> **Do not run `uv add torch --index-url https://download.pytorch.org/whl/cu126`.**
+> `--index-url` *replaces* PyPI for the entire resolution, so `uv` can no longer
+> find `boto3` and the other PyPI deps and fails with "boto3 was not found in the
+> package registry." The index is already configured in `pyproject.toml` under
+> `[[tool.uv.index]]` + `[tool.uv.sources]`; `uv sync --extra torch` is all you need.
 
 Verify — **this is the gate for every CUDA experiment**:
 
@@ -43,7 +49,7 @@ uv run python -c "import torch; print(torch.__version__, torch.version.cuda, tor
 You want `True` and your GPU name. If it prints `False`:
 
 - You likely installed the CPU wheel. Check `torch.version.cuda` — `None` means CPU-only.
-- Reinstall: `uv remove torch` then re-add with the index URL above.
+- Reinstall: `uv sync --reinstall-package torch --extra torch`.
 - Confirm the driver supports your chosen CUDA version (`nvidia-smi` top-right).
 
 ## 4. Confirm the device properties

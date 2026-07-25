@@ -5,7 +5,7 @@ once, then slice minibatches on-device. This isolates the compute so you can stu
 GPU utilization without an input pipeline in the way. Mixed precision uses bf16,
 the clean default on Ada (RTX 40-series) — no gradient scaler needed.
 
-Requires torch: ``uv add torch --index-url https://download.pytorch.org/whl/cu126``.
+Requires torch: ``uv sync --extra torch``.
 """
 
 from __future__ import annotations
