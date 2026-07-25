@@ -16,6 +16,12 @@ GPU/CUDA experiments rigorously.
 | [05-profiling.md](05-profiling.md) | `torch.profiler`, Nsight Systems/Compute, `nvidia-smi` workflows |
 | [06-gpu-concepts.md](06-gpu-concepts.md) | Reference: hardware model, memory hierarchy, terminology |
 | [07-experiment-log.md](07-experiment-log.md) | Template for recording every run |
+| [08-data-layer-lab.md](08-data-layer-lab.md) | **Re-derive the NumPy/pandas code** you were handed (diff against the repo) |
+| [09-concept-map.md](09-concept-map.md) | Checklist of every concept → where you learn it, with the gaps flagged |
+
+`GUIDE.md` (PyTorch) and `08-data-layer-lab.md` (NumPy/pandas) are the two
+"you-write-it" labs; the pre-written code is there to diff against, not to skip past.
+`09-concept-map.md` is the master checklist so no concept slips through.
 
 ## How to use these
 
